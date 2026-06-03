@@ -51,7 +51,7 @@ Formulación y resolución de modelos de optimización con `SciPy` / `PuLP` para
 
 ### 1. Clonar el repositorio
 ```bash
-git clone <url-del-repositorio>
+git clone https://github.com/ImJonathan365/analisis-contrataciones-publicas.git
 cd analisis-contrataciones-publicas
 ```
 
@@ -140,6 +140,6 @@ analisis-contrataciones-publicas/
 ## 📊 Fuente de Datos
 
 **Ministerio de Hacienda de Costa Rica** — Datos Abiertos de Contrataciones Públicas (2022–2024).
-- Formato: CSV (~82 MB)
+- Formato: CSV (~84 MB)
 - Cobertura: Contratos adjudicados a nivel nacional por institución pública
 

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventarios | IF7200</title>
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --card: #ffffff;
+            --text: #1c2333;
+            --muted: #5b6275;
+            --accent: #1f6feb;
+            --accent-soft: #e7f0ff;
+            --border: #dbe3f1;
+            --ok-bg: #e8f7e8;
+            --ok-border: #97d497;
+            --warn-bg: #fff2e1;
+            --warn-border: #f2c078;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #eef4ff 0%, var(--bg) 35%, #f9fafc 100%);
+        }
+        .container {
+            width: min(1100px, 92vw);
+            margin: 36px auto;
+        }
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+        h1 { margin: 0 0 8px; font-size: 1.7rem; }
+        h2 { margin: 0 0 10px; }
+        p { margin: 0; color: var(--muted); }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+        .kpi {
+            background: #f7f9fe;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e8edf8;
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            background: var(--warn-bg);
+            border: 1px solid var(--warn-border);
+            color: #5f4300;
+        }
+        table { border-collapse: collapse; width: 100%; font-size: 14px; }
+        th, td { border: 1px solid #d9e2f2; padding: 7px; text-align: right; }
+        th { background: #f2f6ff; }
+        th:first-child, td:first-child { text-align: left; }
+        form p { margin: 8px 0; }
+        input, select {
+            width: 100%;
+            max-width: 320px;
+            border: 1px solid #c8d4ec;
+            border-radius: 8px;
+            padding: 8px 10px;
+            background: #fff;
+        }
+        button {
+            padding: 8px 12px;
+            border: 1px solid #8ba9e8;
+            border-radius: 8px;
+            background: var(--accent-soft);
+            color: #174caf;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 12px;
+            text-decoration: none;
+            padding: 8px 12px;
+            border: 1px solid #8ba9e8;
+            border-radius: 8px;
+            background: var(--accent-soft);
+            color: #174caf;
+            font-weight: 600;
+        }
+        .table-wrap { overflow-x: auto; }
+        .saw-wrap {
+            border: 1px solid #d9e2f2;
+            border-radius: 10px;
+            padding: 10px;
+            background: #fff;
+        }
+        .small { color: var(--muted); font-size: 0.88rem; }
+        .field { margin: 8px 0 14px; }
+        .field label { display: block; font-weight: 600; margin-bottom: 6px; }
+        .field .helptext { display: block; margin-top: 6px; color: var(--muted); font-size: 0.88rem; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <section class="hero">
+            <h1>Modulo de Inventarios (EOQ / ROP)</h1>
+            <p>Modelo cuantitativo para responder cuanto ordenar y cuando ordenar en compras publicas.</p>
+            <a class="back-button" href="/">Volver a Home</a>
+        </section>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card">
+            <h2>Parametros del Analisis</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label for="{{ form.item_code.id_for_label }}">{{ form.item_code.label }}</label>
+                    {{ form.item_code }}
+                </div>
+
+                <div class="field">
+                    <label for="{{ form.year.id_for_label }}">{{ form.year.label }}</label>
+                    {{ form.year }}
+                </div>
+
+                <div class="field">
+                    <label for="{{ form.order_cost.id_for_label }}">{{ form.order_cost.label }}</label>
+                    {{ form.order_cost }}
+                </div>
+
+                <div class="field">
+                    <label for="{{ form.holding_mode.id_for_label }}">{{ form.holding_mode.label }}</label>
+                    {{ form.holding_mode }}
+                </div>
+
+                <div class="field">
+                    <label for="{{ form.holding_input.id_for_label }}">{{ form.holding_input.label }}</label>
+                    {{ form.holding_input }}
+                    {% if form.holding_input.help_text %}
+                        <span class="helptext">{{ form.holding_input.help_text }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label for="{{ form.lead_time_days.id_for_label }}">{{ form.lead_time_days.label }}</label>
+                    {{ form.lead_time_days }}
+                </div>
+
+                <div class="field">
+                    <label for="{{ form.work_days_year.id_for_label }}">{{ form.work_days_year.label }}</label>
+                    {{ form.work_days_year }}
+                </div>
+
+                <div class="field">
+                    <label for="{{ form.include_safety_stock.id_for_label }}">{{ form.include_safety_stock.label }}</label>
+                    {{ form.include_safety_stock }}
+                </div>
+
+                <div class="field">
+                    <label for="{{ form.service_level.id_for_label }}">{{ form.service_level.label }}</label>
+                    {{ form.service_level }}
+                </div>
+
+                {% if form.errors %}
+                    <div class="alert">
+                        {{ form.errors }}
+                    </div>
+                {% endif %}
+                <button type="submit">Calcular Inventario Optimo</button>
+            </form>
+        </div>
+
+        {% if report %}
+        <div class="card">
+            <h2>Resumen del Item</h2>
+            <p><strong>Descripcion:</strong> {{ report.item_description }}</p>
+            <div class="grid" style="margin-top: 12px;">
+                <div class="kpi"><strong>D (demanda anual):</strong><br>{{ report.demand_annual|floatformat:2 }}</div>
+                <div class="kpi"><strong>Costo unitario prom. (C):</strong><br>{{ report.unit_cost_avg|floatformat:2 }}</div>
+                <div class="kpi"><strong>Ch usado:</strong><br>{{ report.holding_cost_used|floatformat:2 }}</div>
+                <div class="kpi"><strong>Q* (EOQ/CLE):</strong><br>{{ report.q_opt|floatformat:2 }}</div>
+                <div class="kpi"><strong>Ordenes por anio (N):</strong><br>{{ report.orders_per_year|floatformat:2 }}</div>
+                <div class="kpi"><strong>Tiempo entre ordenes (T):</strong><br>{{ report.time_between_orders|floatformat:2 }} dias</div>
+                <div class="kpi"><strong>Demanda diaria (d):</strong><br>{{ report.daily_demand|floatformat:4 }}</div>
+                <div class="kpi"><strong>Punto de reorden (ROP):</strong><br>{{ report.reorder_point|floatformat:2 }}</div>
+            </div>
+            <p class="small" style="margin-top: 10px;">Inventario de seguridad (SS): {{ report.safety_stock|floatformat:2 }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Costos Anuales en Q*</h2>
+            <div class="grid">
+                <div class="kpi"><strong>Costo ordenar anual:</strong><br>{{ report.annual_order_cost|floatformat:2 }}</div>
+                <div class="kpi"><strong>Costo mantener anual:</strong><br>{{ report.annual_holding_cost|floatformat:2 }}</div>
+                <div class="kpi"><strong>Costo total anual (CT):</strong><br>{{ report.total_inventory_cost|floatformat:2 }}</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Tabla Comparativa de Tamano de Lote</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Escenario</th>
+                            <th>Q</th>
+                            <th>Costo ordenar</th>
+                            <th>Costo mantener</th>
+                            <th>Costo total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report.comparison_rows %}
+                        <tr>
+                            <td>{{ row.label }}</td>
+                            <td>{{ row.q|floatformat:2 }}</td>
+                            <td>{{ row.annual_order_cost|floatformat:2 }}</td>
+                            <td>{{ row.annual_holding_cost|floatformat:2 }}</td>
+                            <td>{{ row.total_cost|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Grafico Basico de Diente de Sierra</h2>
+            <div class="saw-wrap">
+                <svg width="100%" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Grafico diente de sierra">
+                    <line x1="20" y1="130" x2="245" y2="130" stroke="#7a8ba8" stroke-width="1" />
+                    <line x1="20" y1="20" x2="20" y2="130" stroke="#7a8ba8" stroke-width="1" />
+                    <polyline points="{{ report.saw_points }}" fill="none" stroke="#1f6feb" stroke-width="2.5" />
+                    <line x1="20" y1="95" x2="245" y2="95" stroke="#f28a2b" stroke-dasharray="4 4" stroke-width="1.6" />
+                    <text x="24" y="90" fill="#f28a2b" font-size="8">ROP</text>
+                </svg>
+            </div>
+            <p class="small" style="margin-top: 10px;">La linea punteada representa el punto de reorden teorico.</p>
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>

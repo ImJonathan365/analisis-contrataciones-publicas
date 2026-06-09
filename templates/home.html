@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Modulos | IF7200</title>
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --card: #ffffff;
+            --text: #1c2333;
+            --muted: #5b6275;
+            --accent: #1f6feb;
+            --accent-soft: #e7f0ff;
+            --border: #dbe3f1;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #eef4ff 0%, var(--bg) 35%, #f9fafc 100%);
+        }
+        .container {
+            width: min(1100px, 92vw);
+            margin: 36px auto;
+        }
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+        h1 { margin: 0 0 8px; font-size: 1.7rem; }
+        .subtitle { margin: 0; color: var(--muted); }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+        .card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(31, 111, 235, 0.12);
+        }
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            background: var(--accent-soft);
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 1.1rem;
+        }
+        .card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.35;
+            font-size: 0.94rem;
+        }
+        .disabled {
+            opacity: 0.75;
+            cursor: default;
+        }
+        .disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .footer {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <section class="hero">
+            <h1>Panel Administrativo Basico de Modulos</h1>
+            <p class="subtitle">Proyecto IF7200 - Metodos Cuantitativos para la Toma de Decisiones</p>
+        </section>
+
+        <section class="grid">
+            <a class="card" href="/pronosticos/">
+                <span class="tag">Disponible</span>
+                <h2>Modulo 1: Pronosticos</h2>
+                <p>Promedio movil simple, promedio movil ponderado, suavizamiento exponencial, MAD, MSE, MAPE, sesgo y senal de rastreo.</p>
+            </a>
+
+            <a class="card" href="/inventarios/">
+                <span class="tag">Disponible</span>
+                <h2>Modulo 2: Inventarios</h2>
+                <p>Modelo EOQ/CLE, costo total y punto de reorden con parametros configurables.</p>
+            </a>
+
+            <a class="card" href="/programacion-lineal/">
+                <span class="tag">Disponible</span>
+                <h2>Modulo 3: Programacion Lineal</h2>
+                <p>Modelo de optimizacion con restricciones presupuestarias, cuotas y analisis de sensibilidad.</p>
+            </a>
+        </section>
+
+        <p class="footer">No se requiere inicio de sesion para consultar los modulos disponibles en ambiente local.</p>
+    </main>
+</body>
+</html>

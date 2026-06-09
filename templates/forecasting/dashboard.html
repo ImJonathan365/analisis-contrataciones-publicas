@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronosticos | IF7200</title>
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --card: #ffffff;
+            --text: #1c2333;
+            --muted: #5b6275;
+            --accent: #1f6feb;
+            --accent-soft: #e7f0ff;
+            --border: #dbe3f1;
+            --ok-bg: #e8f7e8;
+            --ok-border: #97d497;
+            --warn-bg: #fff2e1;
+            --warn-border: #f2c078;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #eef4ff 0%, var(--bg) 35%, #f9fafc 100%);
+        }
+        .container {
+            width: min(1100px, 92vw);
+            margin: 36px auto;
+        }
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+        h1 { margin: 0 0 8px; font-size: 1.7rem; }
+        h2 { margin: 0 0 10px; }
+        p { margin: 0; color: var(--muted); }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+        .kpi {
+            background: #f7f9fe;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e8edf8;
+        }
+        .alert { padding: 12px; border-radius: 8px; margin: 12px 0; }
+        .alert.ok { background: var(--ok-bg); border: 1px solid var(--ok-border); }
+        .alert.warn { background: var(--warn-bg); border: 1px solid var(--warn-border); }
+        .table-wrap { overflow-x: auto; }
+        table { border-collapse: collapse; width: 100%; font-size: 14px; }
+        th, td { border: 1px solid #d9e2f2; padding: 7px; text-align: right; }
+        th { background: #f2f6ff; }
+        th:first-child, td:first-child { text-align: left; }
+        form p { margin: 8px 0; }
+        input {
+            width: 100%;
+            max-width: 260px;
+            border: 1px solid #c8d4ec;
+            border-radius: 8px;
+            padding: 8px 10px;
+            background: #fff;
+        }
+        button {
+            padding: 8px 12px;
+            border: 1px solid #8ba9e8;
+            border-radius: 8px;
+            background: var(--accent-soft);
+            color: #174caf;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 12px;
+            text-decoration: none;
+            padding: 8px 12px;
+            border: 1px solid #8ba9e8;
+            border-radius: 8px;
+            background: var(--accent-soft);
+            color: #174caf;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+    <section class="hero">
+        <h1>Modulo de Pronosticos - IF7200</h1>
+        <p>Serie temporal mensual calculada desde <strong>public_contracts</strong> usando FECHA_APERTURA y gasto en CRC.</p>
+        <a class="back-button" href="/">Volver a Home</a>
+    </section>
+
+    <div class="card">
+        <h2>Parametros del Modelo</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Recalcular Pronosticos</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Indicadores de Exactitud</h2>
+        <div class="grid">
+            <div class="kpi"><strong>PMS MAD:</strong> {{ kpis.pms.mad|floatformat:2 }}</div>
+            <div class="kpi"><strong>PMP MAD:</strong> {{ kpis.pmp.mad|floatformat:2 }}</div>
+            <div class="kpi"><strong>SES MAD:</strong> {{ kpis.ses.mad|floatformat:2 }}</div>
+            <div class="kpi"><strong>SES MSE:</strong> {{ kpis.ses.mse|floatformat:2 }}</div>
+            <div class="kpi"><strong>SES MAPE:</strong> {{ kpis.ses.mape|floatformat:2 }}%</div>
+            <div class="kpi"><strong>SES Bias:</strong> {{ kpis.ses.bias|floatformat:2 }}</div>
+            <div class="kpi"><strong>Ultimo TS:</strong> {{ kpis.last_ts|floatformat:4 }}</div>
+            <div class="kpi"><strong>Total periodos:</strong> {{ total_periods }}</div>
+        </div>
+
+        {% if out_of_control %}
+            <div class="alert warn">
+                Alerta: la senal de rastreo excede el limite +/-{{ kpis.limit }}. El modelo esta fuera de control.
+            </div>
+        {% else %}
+            <div class="alert ok">
+                Control estadistico aceptable: la senal de rastreo se mantiene en el rango +/-{{ kpis.limit }}.
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Tabla de Resultados (ultimos 24 meses)</h2>
+        <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mes</th>
+                    <th>Real (Y_t)</th>
+                    <th>Pronosticado SES (F_t)</th>
+                    <th>Error (Y_t - F_t)</th>
+                    <th>SCEP / RSFE</th>
+                    <th>DMA / MAD</th>
+                    <th>Senal de Rastreo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.PERIODO }}</td>
+                    <td>{{ row.REAL|floatformat:2 }}</td>
+                    <td>{{ row.F_SES|floatformat:2 }}</td>
+                    <td>{{ row.ERROR_SES|floatformat:2 }}</td>
+                    <td>{{ row.SCEP|floatformat:2 }}</td>
+                    <td>{{ row.DMA|floatformat:2 }}</td>
+                    <td>{{ row.TS|floatformat:4 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    </main>
+</body>
+</html>

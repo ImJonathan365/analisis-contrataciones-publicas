@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programacion Lineal | IF7200</title>
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --card: #ffffff;
+            --text: #1c2333;
+            --muted: #5b6275;
+            --accent: #1f6feb;
+            --accent-soft: #e7f0ff;
+            --border: #dbe3f1;
+            --ok-bg: #e8f7e8;
+            --ok-border: #97d497;
+            --warn-bg: #fff2e1;
+            --warn-border: #f2c078;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top left, #eef4ff 0%, var(--bg) 35%, #f9fafc 100%);
+        }
+        .container { width: min(1100px, 92vw); margin: 36px auto; }
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+        h1 { margin: 0 0 8px; font-size: 1.7rem; }
+        h2 { margin: 0 0 10px; }
+        p { margin: 0; color: var(--muted); }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+        .kpi { background: #f7f9fe; padding: 10px; border-radius: 8px; border: 1px solid #e8edf8; }
+        .alert { padding: 12px; border-radius: 8px; margin: 12px 0; }
+        .alert.ok { background: var(--ok-bg); border: 1px solid var(--ok-border); }
+        .alert.warn { background: var(--warn-bg); border: 1px solid var(--warn-border); }
+        .table-wrap { overflow-x: auto; }
+        table { border-collapse: collapse; width: 100%; font-size: 14px; }
+        th, td { border: 1px solid #d9e2f2; padding: 7px; text-align: right; }
+        th { background: #f2f6ff; }
+        th:first-child, td:first-child { text-align: left; }
+        form p { margin: 8px 0; }
+        input, select {
+            width: 100%; max-width: 320px; border: 1px solid #c8d4ec; border-radius: 8px; padding: 8px 10px; background: #fff;
+        }
+        button {
+            padding: 8px 12px; border: 1px solid #8ba9e8; border-radius: 8px; background: var(--accent-soft); color: #174caf; cursor: pointer; font-weight: 600;
+        }
+        .back-button {
+            display: inline-block; margin-top: 12px; text-decoration: none; padding: 8px 12px; border: 1px solid #8ba9e8; border-radius: 8px; background: var(--accent-soft); color: #174caf; font-weight: 600;
+        }
+        .small { color: var(--muted); font-size: 0.88rem; }
+        .field { margin: 8px 0 14px; }
+        .field label { display: block; font-weight: 600; margin-bottom: 6px; }
+        .field .helptext { display: block; margin-top: 6px; color: var(--muted); font-size: 0.88rem; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <section class="hero">
+            <h1>Modulo de Programacion Lineal</h1>
+            <p>Modelo de asignacion presupuestaria con minimizacion de costos, cuota minima PYMES y cobertura institucional.</p>
+            <a class="back-button" href="/">Volver a Home</a>
+        </section>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}warn{% else %}ok{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card">
+            <h2>Parametros del Modelo</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label for="{{ form.year.id_for_label }}">{{ form.year.label }}</label>
+                    {{ form.year }}
+                </div>
+                <div class="field">
+                    <label for="{{ form.allocation_use_percent.id_for_label }}">{{ form.allocation_use_percent.label }}</label>
+                    {{ form.allocation_use_percent }}
+                </div>
+                <div class="field">
+                    <label for="{{ form.pymes_min_percent.id_for_label }}">{{ form.pymes_min_percent.label }}</label>
+                    {{ form.pymes_min_percent }}
+                </div>
+                <div class="field">
+                    <label for="{{ form.institutional_min_percent.id_for_label }}">{{ form.institutional_min_percent.label }}</label>
+                    {{ form.institutional_min_percent }}
+                </div>
+                {% if form.errors %}
+                    <div class="alert warn">{{ form.errors }}</div>
+                {% endif %}
+                <button type="submit">Resolver Programacion Lineal</button>
+            </form>
+        </div>
+
+        {% if report %}
+        <div class="card">
+            <h2>Resumen del Modelo</h2>
+            <div class="grid">
+                <div class="kpi"><strong>Valor optimo Z:</strong><br>{{ report.objective_value|floatformat:4 }}</div>
+                <div class="kpi"><strong>Presupuesto historico maximo:</strong><br>{{ report.budget_cap|floatformat:2 }}</div>
+                <div class="kpi"><strong>Asignacion objetivo:</strong><br>{{ report.allocation_target|floatformat:2 }}</div>
+                <div class="kpi"><strong>Cuota minima PYMES:</strong><br>{{ report.pymes_min_ratio|floatformat:2 }}</div>
+                <div class="kpi"><strong>Cuota minima institucional:</strong><br>{{ report.institutional_min_ratio|floatformat:2 }}</div>
+                <div class="kpi"><strong>Estado:</strong><br>{{ report.status }}</div>
+            </div>
+            <p class="small" style="margin-top: 10px;">{{ report.message }}</p>
+        </div>
+
+        <div class="card">
+            <h2>Variables de Decision</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Categoria</th>
+                            <th>Valor optimo X_i</th>
+                            <th>Coeficiente objetivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report.variable_rows %}
+                        <tr>
+                            <td>{{ row.variable }}</td>
+                            <td>{{ row.valor_optimo|floatformat:4 }}</td>
+                            <td>{{ row.coef_objetivo|floatformat:4 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Analisis de Sensibilidad</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Restriccion</th>
+                            <th>Estado</th>
+                            <th>Lado izquierdo</th>
+                            <th>Lado derecho</th>
+                            <th>Holgura/Excedente</th>
+                            <th>Precio sombra</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report.sensitivity_rows %}
+                        <tr>
+                            <td>{{ row.restriccion }}</td>
+                            <td>{{ row.estado }}</td>
+                            <td>{{ row.lhs|floatformat:4 }}</td>
+                            <td>{{ row.rhs|floatformat:4 }}</td>
+                            <td>{{ row.holgura_excedente|floatformat:4 }}</td>
+                            <td>{{ row.precio_sombra|floatformat:6 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Parametros Historicos por Tipo de Procedimiento</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Monto historico</th>
+                            <th>Registros</th>
+                            <th>Promedio monto</th>
+                            <th>Coef. objetivo</th>
+                            <th>Ratio PYMES</th>
+                            <th>Cobertura institucional</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report.cost_rows %}
+                        <tr>
+                            <td>{{ row.tipo_procedimiento }}</td>
+                            <td>{{ row.monto_historico_crc|floatformat:2 }}</td>
+                            <td>{{ row.registros }}</td>
+                            <td>{{ row.promedio_monto_crc|floatformat:2 }}</td>
+                            <td>{{ row.coef_objetivo|floatformat:4 }}</td>
+                            <td>{{ row.pymes_ratio|floatformat:4 }}</td>
+                            <td>{{ row.cobertura_institucional|floatformat:4 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Presupuesto Historico por Mes</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Periodo</th>
+                            <th>Monto total CRC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report.monthly_budget_rows %}
+                        <tr>
+                            <td>{{ row.PERIODO }}</td>
+                            <td>{{ row.MONTO_TOTAL_CRC|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>
